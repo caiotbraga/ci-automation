@@ -10,9 +10,27 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        # healthcheck para garantir que o banco esteja pronto antes dos testes evitando erro de connection refused
+        options: >-
+          --health-cmd="pg_isready -U ${{ secrets.POSTGRES_USER }}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+          
     strategy:
       matrix:
         go_version: ['1.18', '1.17', '>=1.18']
+        
     steps:
     - uses: actions/checkout@v3
 
@@ -20,14 +38,14 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go_version }}
-      
-    - name: Build-DB
-      run: docker compose build
-      
-    - name: Create-DB
-      run: docker compose up -d
 
     - name: Test
+      env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: ${{ secrets.POSTGRES_USER }}
+          DB_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DB_NAME: ${{ secrets.POSTGRES_DB }}
       run: go test -v main_test.go 
       
   
