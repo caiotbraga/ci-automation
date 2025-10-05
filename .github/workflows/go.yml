@@ -50,15 +50,20 @@ jobs:
   
   build:
     needs: test
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: ['ubuntu-latest']
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Build
       run: go build -v main.go
 
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v5.0.0
+      with:
+    # Name of the artifact to download. If unspecified, all artifacts for the run are downloaded.
+        name: program
+    # Destination path. Supports basic tilde expansion. Defaults to $GITHUB_WORKSPACE
+        path: main
+          
   docker:
     needs: build
     uses: ./.github/workflows/Docker.yml
