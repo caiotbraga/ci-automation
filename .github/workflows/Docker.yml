@@ -26,5 +26,5 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: caiotbraga/ci-automation:${{github.ref_name}}
+        tags: caiotbraga/go_ci:${{github.ref_name}}
           
